@@ -15,4 +15,5 @@
 
 # Запуск 
 - cd notes-task
+- npm install
 - npm run dev
