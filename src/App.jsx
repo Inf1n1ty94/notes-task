@@ -1,34 +1,96 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
+import { NotesList } from "./components/NotesList/NotesList.jsx";
+import { NoteModal } from "./components/NoteAdd/NoteModal.jsx";
+
+import { loadNotes, saveNotes } from "./utils/storage.js";
+
+import "./assets/styles/index.css";
+
+export const App = () => {
+
+  const savedNotes = loadNotes();
+
+  const [notes, setNotes] = useState( savedNotes ?? [] );
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("create"); 
+  const [editingNote, setEditingNote] = useState(null);
+
+  useEffect(() => {
+    const hasInitialized = localStorage.getItem("hasInitializedNotes");
+
+    if (!hasInitialized && notes.length === 0) {
+      setNotes([
+        {
+          id: Date.now(),
+          title: "Первая заметка",
+          body: "Описание первой заметки",
+        },
+      ]);
+
+      localStorage.setItem("hasInitializedNotes", "true");
+    }
+  }, []);
+
+  useEffect(() => {
+    saveNotes(notes);
+  }, [notes]);
+
+  const openCreateModal = () => {
+    setModalMode("create");
+    setEditingNote({ title: "", body: "" });
+    setIsModalOpen(true);
+  };
+
+  const openViewModal = (note) => {
+  setModalMode("view"); 
+  setEditingNote(note);
+  setIsModalOpen(true);
+};
+
+  const handleSaveNote = ({ title, body }) => {
+    if (modalMode === "create") {
+      const newNote = {
+        id: Date.now(),
+        title,
+        body,
+      };
+      setNotes([newNote, ...notes]);
+    }
+
+    {modalMode === 'view' && editingNote && (
+        setNotes(notes.map(n => n.id === editingNote.id ? { ...n, title, body } : n))
+      );
+    }
+
+    setIsModalOpen(false);
+    setEditingNote(null);
+  };
+
+  const removeNote = (note) => {
+    setNotes(notes.filter(n => n.id !== note.id))
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div>
+      <NotesList
+        notes={notes}
+        onCreate={openCreateModal}
+        onDelete={removeNote}
+        onView={openViewModal}
+      />
 
-export default App
+      <NoteModal
+        isOpen={isModalOpen}
+        mode={modalMode}
+        note={editingNote}
+        onSave={handleSaveNote}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingNote(null); 
+        }}
+      />
+    </div>
+  );
+};

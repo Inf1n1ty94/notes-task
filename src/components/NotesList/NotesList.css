@@ -1,0 +1,32 @@
+.list__title {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 40px 40px 24px;
+  color: white;
+}
+
+.list {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 40px 80px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.list > button {
+  height: 180px;
+  border: 2px dashed white;
+  border-radius: 16px;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.list > button:hover {
+  border-color: cyan;
+  color: cyan;
+  background: rgba(0, 102, 255, 0.04);
+}
